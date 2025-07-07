@@ -1,50 +1,87 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #0f172a;
-  color: white;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* General Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+body {
+  background: linear-gradient(135deg, #0f0f0f, #1c1c1c);
+  color: #00ffee;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container */
 .container {
-  background-color: #1e293b;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
-  width: 400px;
+  background-color: #121212;
+  border: 2px solid #00ffee33;
+  border-radius: 16px;
+  padding: 30px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 0 20px #00ffee33;
   text-align: center;
 }
 
-input, button {
+/* Title */
+.container h1 {
+  margin-bottom: 20px;
+  font-size: 2rem;
+  color: #00ffee;
+  text-shadow: 0 0 10px #00ffee99;
+}
+
+/* Input */
+input[type="text"] {
   width: 100%;
-  padding: 1rem;
-  margin-top: 1rem;
+  padding: 15px;
+  border-radius: 10px;
   border: none;
-  border-radius: 0.5rem;
+  margin-bottom: 15px;
   font-size: 1rem;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  outline: none;
+  box-shadow: inset 0 0 5px #00ffee66;
 }
 
-input {
-  background: #334155;
-  color: white;
-}
-
+/* Buttons */
 button {
-  background: #3b82f6;
-  color: white;
+  background-color: #00ffee;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 1rem;
   cursor: pointer;
+  margin: 5px;
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 0 10px #00ffee88;
 }
 
 button:hover {
-  background: #2563eb;
+  background-color: #00ddcc;
+  transform: scale(1.05);
 }
 
+button:active {
+  background-color: #00aa99;
+  transform: scale(0.98);
+}
+
+/* Response */
 .response {
-  background: #334155;
-  margin-top: 1.5rem;
-  padding: 1rem;
-  border-radius: 0.5rem;
+  margin-top: 20px;
+  background-color: #1c1c1c;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #00ffee33;
+  color: #ffffff;
+  text-align: left;
   white-space: pre-wrap;
+  box-shadow: inset 0 0 10px #00ffee33;
 }
