@@ -8,15 +8,26 @@
 <body>
   <div class="container">
     <h1>🤖 Jarvis AI</h1>
-    <input type="text" id="prompt" placeholder="Ask me anything..." />
-    <button onclick="askJarvis()">Ask</button>
+    
+    <input type="text" id="prompt" placeholder="Ask me anything..." onkeypress="if(event.key === 'Enter') askJarvis()" />
+    
+    <div style="margin-top: 10px;">
+      <button onclick="askJarvis()">Ask</button>
+      <button onclick="stopSpeaking()">Stop Speaking</button>
+    </div>
+    
     <div id="response" class="response"></div>
   </div>
 
   <script>
+    let currentUtterance = null;
+
     async function askJarvis() {
       const prompt = document.getElementById("prompt").value;
       document.getElementById("response").innerText = "🧠 Thinking...";
+
+      // Stop anything currently speaking before next question
+      stopSpeaking();
 
       const res = await fetch("/ask", {
         method: "POST",
@@ -27,8 +38,16 @@
       const data = await res.json();
       document.getElementById("response").innerText = data.reply;
 
-      const speak = new SpeechSynthesisUtterance(data.reply);
-      speechSynthesis.speak(speak);
+      // Speak the reply
+      currentUtterance = new SpeechSynthesisUtterance(data.reply);
+      speechSynthesis.speak(currentUtterance);
+    }
+
+    function stopSpeaking() {
+      if (speechSynthesis.speaking || speechSynthesis.pending) {
+        speechSynthesis.cancel();
+      }
+      currentUtterance = null;
     }
   </script>
 </body>
