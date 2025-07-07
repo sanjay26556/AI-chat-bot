@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jarvis AI Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 Jarvis AI</h1>
+    <input type="text" id="prompt" placeholder="Ask me anything..." />
+    <button onclick="askJarvis()">Ask</button>
+    <div id="response" class="response"></div>
+  </div>
+
+  <script>
+    async function askJarvis() {
+      const prompt = document.getElementById("prompt").value;
+      document.getElementById("response").innerText = "🧠 Thinking...";
+
+      const res = await fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await res.json();
+      document.getElementById("response").innerText = data.reply;
+
+      const speak = new SpeechSynthesisUtterance(data.reply);
+      speechSynthesis.speak(speak);
+    }
+  </script>
+</body>
+</html>
