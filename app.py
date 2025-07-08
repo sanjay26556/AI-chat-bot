@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 client = OpenAI(
-    api_key="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",
+    api_key="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",
     base_url="https://openrouter.ai/api/v1"
 )
 
@@ -14,9 +14,8 @@ def home():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    user_input = request.form.get("prompt") or request.json.get("prompt")
+    user_input = request.json.get("prompt")
 
-    # define the message prompt FIRST
     messages = [
         {
             "role": "system",
@@ -39,16 +38,10 @@ def ask():
             max_tokens=300,
         )
 
-        # only print reply after it’s extracted
         if chat_completion and chat_completion.choices:
             reply = chat_completion.choices[0].message.content.strip()
         else:
             reply = "Hmm, I didn't get any response from the model. Try again?"
-
-        # now safe to print debug info
-        print("Prompt sent:", messages)
-        print("Model replied:", reply)
-        print("Full response:", chat_completion)
 
     except Exception as e:
         print("❌ Error talking to OpenRouter:", str(e))
@@ -56,5 +49,5 @@ def ask():
 
     return jsonify({ "reply": reply })
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     app.run(debug=True)
