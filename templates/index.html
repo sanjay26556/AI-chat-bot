@@ -2,52 +2,147 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jarvis AI Assistant</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
-    <h1>🤖 Jarvis AI</h1>
-    
-    <input type="text" id="prompt" placeholder="Ask me anything..." onkeypress="if(event.key === 'Enter') askJarvis()" />
-    
-    <div style="margin-top: 10px;">
-      <button onclick="askJarvis()">Ask</button>
-      <button onclick="stopSpeaking()">Stop Speaking</button>
+    <div class="card" id="jarvis-card">
+      <h1>🤖 Jarvis AI</h1>
+      <div class="status-dots">
+        <div class="dot" id="dot1"></div>
+        <div class="dot" id="dot2"></div>
+        <div class="dot" id="dot3"></div>
+      </div>
+      <input type="text" id="prompt" placeholder="Ask me anything..." onkeypress="if(event.key === 'Enter') askJarvis()" />
+      <div class="button-group">
+        <button onclick="askJarvis()" id="ask-btn"><span id="ask-text">Ask</span></button>
+        <button onclick="startListening()" id="mic-btn">🎤</button>
+        <button onclick="stopSpeaking()" id="stop-btn">🔇</button>
+      </div>
+      <div id="response" class="response"></div>
     </div>
-    
-    <div id="response" class="response"></div>
   </div>
 
   <script>
     let currentUtterance = null;
+    let isThinking = false;
+    let isSpeaking = false;
+    let isListening = false;
+    let recognition = null;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('prompt').value = transcript;
+        setListening(false);
+      };
+
+      recognition.onerror = () => setListening(false);
+      recognition.onend = () => setListening(false);
+    }
 
     async function askJarvis() {
       const prompt = document.getElementById("prompt").value;
-      document.getElementById("response").innerText = "🧠 Thinking...";
+      if (!prompt.trim()) return;
 
-      // Stop anything currently speaking before next question
+      setThinking(true);
+      document.getElementById("response").innerText = "";
       stopSpeaking();
 
-      const res = await fetch("/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
+      try {
+        const res = await fetch("/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ prompt: prompt })
+        });
 
-      const data = await res.json();
-      document.getElementById("response").innerText = data.reply;
+        const data = await res.json();
+        const reply = data.reply;
+        document.getElementById("response").innerText = reply;
+        setThinking(false);
+        speakResponse(reply);
+      } catch (error) {
+        document.getElementById("response").innerText = "Error connecting to Jarvis. Try again.";
+        setThinking(false);
+      }
+    }
 
-      // Speak the reply
-      currentUtterance = new SpeechSynthesisUtterance(data.reply);
-      speechSynthesis.speak(currentUtterance);
+    function speakResponse(text) {
+      if ('speechSynthesis' in window) {
+        currentUtterance = new SpeechSynthesisUtterance(text);
+        currentUtterance.rate = 0.9;
+        currentUtterance.pitch = 1;
+        currentUtterance.onstart = () => setSpeaking(true);
+        currentUtterance.onend = () => setSpeaking(false);
+        currentUtterance.onerror = () => setSpeaking(false);
+        speechSynthesis.speak(currentUtterance);
+      }
     }
 
     function stopSpeaking() {
       if (speechSynthesis.speaking || speechSynthesis.pending) {
         speechSynthesis.cancel();
       }
+      setSpeaking(false);
       currentUtterance = null;
+    }
+
+    function startListening() {
+      if (recognition && !isListening) {
+        setListening(true);
+        recognition.start();
+      }
+    }
+
+    function setThinking(thinking) {
+      isThinking = thinking;
+      updateUI();
+    }
+
+    function setSpeaking(speaking) {
+      isSpeaking = speaking;
+      updateUI();
+    }
+
+    function setListening(listening) {
+      isListening = listening;
+      updateUI();
+    }
+
+    function updateUI() {
+      const card = document.getElementById('jarvis-card');
+      const dots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3')];
+      const askBtn = document.getElementById('ask-btn');
+      const askText = document.getElementById('ask-text');
+
+      card.className = 'card';
+      dots.forEach(dot => dot.className = 'dot');
+
+      if (isSpeaking) {
+        card.classList.add('speaking');
+        dots.forEach(dot => dot.classList.add('speaking'));
+      } else if (isThinking) {
+        card.classList.add('thinking');
+        dots.forEach(dot => dot.classList.add('thinking'));
+        askText.textContent = 'Thinking...';
+      } else if (isListening) {
+        card.classList.add('listening');
+        dots.forEach(dot => dot.classList.add('listening'));
+      } else {
+        askText.textContent = 'Ask';
+      }
+
+      askBtn.disabled = isThinking;
     }
   </script>
 </body>
